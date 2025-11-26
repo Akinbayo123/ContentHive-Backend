@@ -1,0 +1,21 @@
+import { config } from 'dotenv'
+config()
+export const {
+    PORT,
+    DB_URI,
+    JWT_SECRET,
+    JWT_EXPIRES_IN,
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET,
+    FRONTEND_URL,
+    PAYSTACK_PUBLIC_KEY,
+    PAYSTACK_SECRET_KEY,
+    BASE_URL,
+    EMAIL_URL,
+
+} = process.env
