@@ -2,13 +2,13 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as GithubStrategy } from 'passport-github2';
 import User from '../models/User.js';
-import { GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET } from './env.js';
+import { BASE_URL, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from './env.js';
 
 passport.use(new GoogleStrategy({
   clientID: GOOGLE_CLIENT_ID,
   clientSecret: GOOGLE_CLIENT_SECRET,
-  callbackURL:'http://localhost:5000/api/v1/oauth/google/callback',
-  passReqToCallback: true 
+  callbackURL: `${BASE_URL}/api/v1/oauth/google/callback`,
+  passReqToCallback: true
 }, async (req, accessToken, refreshToken, profile, done) => {
   try {
     const role = req.query.state || 'user'; // role from frontend
@@ -17,7 +17,7 @@ passport.use(new GoogleStrategy({
     let user = await User.findOne({ email });
 
     if (user) {
-        if (!user.oauthProvider) {
+      if (!user.oauthProvider) {
         return done(new Error('This email is already registered with email/password. Please login using your email and password.'), null);
       }
       // User exists → login
@@ -46,7 +46,7 @@ passport.use(new GoogleStrategy({
 passport.use(new GithubStrategy({
   clientID: GITHUB_CLIENT_ID,
   clientSecret: GITHUB_CLIENT_SECRET,
-  callbackURL: 'http://localhost:5000/api/v1/oauth/github/callback',
+  callbackURL: `${BASE_URL}/api/v1/oauth/github/callback`,
   passReqToCallback: true
 }, async (req, accessToken, refreshToken, profile, done) => {
   try {
@@ -56,7 +56,7 @@ passport.use(new GithubStrategy({
     let user = await User.findOne({ email });
 
     if (user) {
-        if (!user.oauthProvider) {
+      if (!user.oauthProvider) {
         return done(new Error('This email is already registered with email/password. Please login using your email and password.'), null);
       }
       // User exists → login
