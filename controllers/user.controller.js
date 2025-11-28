@@ -169,74 +169,86 @@ export const purchaseFile = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   // Find file
-  const file = await File.findById(fileId).populate('creator');
-  if (!file) return res.status(404).json({ message: 'File not found' });
+  const file = await File.findById(fileId).populate("creator");
+  if (!file) {
+    return res.status(404).json({ message: "File not found" });
+  }
 
   const currentPrice = file.price;
 
-  // Create idempotency key that includes price
+  //Idempotency key (unique for user + file + price)
   const idempotencyKey = `${userId}-${fileId}-${currentPrice}`;
 
-  // Check if a pending or successful payment already exists for this key
-  let existingPayment = await Payment.findOne({
+  //Check for existing pending or successful payment
+  const existingPayment = await Payment.findOne({
     idempotencyKey,
-    status: { $in: ['pending', 'success'] }
+    status: { $in: ["pending", "success"] },
   });
 
-  // If already paid, block
-  if (existingPayment?.status === 'success') {
-    return res.status(400).json({ message: 'You have already purchased this file' });
+  // If already purchased
+  if (existingPayment?.status === "success") {
+    return res
+      .status(400)
+      .json({ message: "You have already purchased this file" });
   }
 
-  // If pending and price matches, reuse it
-  if (existingPayment?.status === 'pending') {
+  // If payment still pending, reuse the link
+  if (existingPayment?.status === "pending") {
     return res.status(200).json({
       authorization_url: existingPayment.authorizationUrl,
       reference: existingPayment.transactionReference,
-      amount: existingPayment.amount
+      amount: existingPayment.amount,
     });
   }
 
-  // Otherwise, create new payment
-  const reference = `ref_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  // Clean up FAILED payments for same user+file+price
+  await Payment.deleteMany({
+    idempotencyKey,
+    status: "failed",
+  });
+
+  // Create new payment
+  const reference = `ref_${Date.now()}_${Math.floor(
+    Math.random() * 1000
+  )}`;
   const callback_url = `${process.env.BASE_URL}/api/v1/payment/verify/${reference}`;
 
-  // Initialize Paystack transaction
+  // Initialize Paystack payment
   const response = await axios.post(
-    'https://api.paystack.co/transaction/initialize',
+    "https://api.paystack.co/transaction/initialize",
     {
       email: req.user.email,
-      amount: currentPrice * 100, // convert to kobo
+      amount: currentPrice * 100, // kobo
       callback_url,
-      metadata: { userId, fileId }
+      metadata: { userId, fileId },
     },
     {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-        'Idempotency-Key': idempotencyKey // ✅ send to Paystack
-      }
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotencyKey, // ensures paystack doesn't double-charge
+      },
     }
   );
 
-  // Save payment in DB
+  // Save new payment record
   const payment = await Payment.create({
     user: userId,
     file: fileId,
     amount: currentPrice,
     creator: file.creator._id,
-    status: 'pending',
+    status: "pending",
     transactionReference: reference,
     paymentGatewayReference: response.data.data.reference,
     idempotencyKey,
-    authorizationUrl: response.data.data.authorization_url
+    authorizationUrl: response.data.data.authorization_url,
   });
 
-  // Return authorization URL and reference to frontend
-  res.status(200).json({
+  // Send response to frontend
+  return res.status(200).json({
     authorization_url: payment.authorizationUrl,
     reference: payment.transactionReference,
-    amount: payment.amount
+    amount: payment.amount,
   });
 });
 
@@ -253,7 +265,7 @@ export const getFavourites = asyncHandler(async (req, res) => {
   const favourites = await Favourite.find({ user: userId })
     .populate({
       path: "file",
-      match: { isAvailable: true }, // ✅ ONLY AVAILABLE FILES
+      match: { isAvailable: true }, // ONLY AVAILABLE FILES
       populate: {
         path: "creator",
         select: "name",
