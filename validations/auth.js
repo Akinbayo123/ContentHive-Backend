@@ -15,7 +15,7 @@ export const registerRules = [
   body('name')
     .notEmpty()
     .withMessage('Name is required'),
-    body('email')
+  body('email')
     .isEmail()
     .withMessage('Please enter a valid email')
     .custom(async (value) => {
@@ -27,7 +27,9 @@ export const registerRules = [
     }),
   body('password')
     .notEmpty()
-    .withMessage('Password is required'),
+    .withMessage('Password is required')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
   body('role')
     .notEmpty()
     .withMessage('Role is required')
