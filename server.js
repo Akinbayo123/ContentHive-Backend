@@ -19,7 +19,7 @@ import creatorRoutes from './routes/creator.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import chatRoutes from './routes/chat.routes.js';
 import { startTransactionPolling } from './jobs/checkPendingTransactions.js';
-import { JWT_SECRET } from './config/env.js';
+import { FRONTEND_URL, JWT_SECRET } from './config/env.js';
 
 dotenv.config();
 
@@ -46,12 +46,11 @@ app.use('/api/v1/chats', chatRoutes);
 
 
 
-
 // create HTTP server & socket server
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: FRONTEND_URL || 'http://localhost:3000',
     methods: ['GET', 'POST'],
   },
 });
