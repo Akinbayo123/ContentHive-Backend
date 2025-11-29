@@ -12,7 +12,7 @@ import User from './models/User.js';
 import bodyParser from 'body-parser';
 import errorHandler from './middlewares/error.middleware.js';
 import oauthRoutes from './routes/oauth.route.js';
-import fileUploadRoutes from './routes/file-upload.route.js';
+
 import paystackRoutes from './routes/payment.routes.js';
 import userRoutes from './routes/user.routes.js';
 import creatorRoutes from './routes/creator.routes.js';
