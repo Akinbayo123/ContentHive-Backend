@@ -10,7 +10,7 @@ const storage = new CloudinaryStorage({
     allowed_formats: [
       'jpg', 'png', 'jpeg', 'gif',
       'mp3', 'mp4', 'mpa',
-      'pdf'
+      'pdf', 'mov', 'avi', 'wmv', 'mkv'
     ],
   },
 });
