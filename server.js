@@ -141,7 +141,7 @@ io.on('connection', (socket) => {
 app.use(errorHandler);
 startTransactionPolling();
 // Start server
-// Start server properly with Socket.IO
+
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, async () => {
