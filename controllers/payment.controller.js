@@ -23,56 +23,7 @@ const createChatIfNotExists = async (buyerId, creatorId, fileId) => {
   return chat;
 };
 
-// Initialize payment
-export const initializePayment = asyncHandler(async (req, res) => {
-  // const { fileId } = req.body;
-  // const userId = req.user._id;
 
-  // // Find file
-  // const file = await File.findById(fileId).populate('creator');
-  // if (!file) return res.status(404).json({ message: 'File not found' });
-
-  // // Check if user already paid
-  // const existingPayment = await Payment.findOne({ user: userId, file: fileId, status: 'success' });
-  // if (existingPayment) return res.status(400).json({ message: 'You have already paid for this file' });
-
-  const reference = `ref_${Date.now()}`;
-
-  // Create pending payment record
-  // await Payment.create({
-  //   user: userId,
-  //   file: fileId,
-  //   amount: file.price,
-  //   status: 'pending',
-  //   transactionReference: reference
-  // });
-
-  // Callback URL for Paystack redirect
-  const callback_url = `${BASE_URL}/api/v1/payment/verify/${reference}`;
-
-  // Initialize Paystack transaction
-  const response = await axios.post(
-    'https://api.paystack.co/transaction/initialize',
-    {
-      email: 'akingbolaodun@gmail.com',
-      amount: 10000 * 100, // convert to kobo
-      callback_url,
-      // metadata: { userId, fileId }
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    }
-  );
-
-  res.status(200).json({
-    authorization_url: response.data.data.authorization_url,
-    response: response.data,
-    reference
-  });
-});
 
 
 //Verify Transaction
